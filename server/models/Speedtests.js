@@ -39,6 +39,10 @@ module.exports = db.define("speedtests", {
         type: Sequelize.INTEGER,
         defaultValue: 0
     },
+    ip_address: {
+        type: Sequelize.STRING,
+        allowNull: true
+    },
     created: {
         type: process.env.DB_TYPE === "mysql" ? Sequelize.STRING : Sequelize.TIME,
         defaultValue: Sequelize.NOW

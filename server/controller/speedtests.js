@@ -1,15 +1,28 @@
 const tests = require('../models/Speedtests');
 const {Op, Sequelize} = require("sequelize");
 const {mapFixed, mapRounded} = require("../util/helpers");
+const {getPublicIpAddress} = require("../util/publicIp");
 
-module.exports.create = async (ping, download, upload, time, serverId, type = "auto", resultId = null, error = null) => {
-    return (await tests.create({ping, download, upload, error, serverId, type, resultId, time, created: new Date().toISOString()})).id;
+module.exports.create = async (ping, download, upload, time, serverId, type = "auto", resultId = null, error = null, ipAddress = null) => {
+    // If no IP address is provided, try to fetch it
+    if (!ipAddress) {
+        try {
+            ipAddress = await getPublicIpAddress();
+        } catch (e) {
+            console.warn('Failed to fetch public IP for speedtest:', e.message);
+            ipAddress = null; // Allow null IP if fetching fails
+        }
+    }
+    
+    return (await tests.create({ping, download, upload, error, serverId, type, resultId, time, ip_address: ipAddress, created: new Date().toISOString()})).id;
 }
 
 module.exports.getOne = async (id) => {
     let speedtest = await tests.findByPk(id);
     if (speedtest === null) return null;
     if (speedtest.error === null) delete speedtest.error;
+    if (speedtest.resultId === null) delete speedtest.resultId;
+    if (speedtest.ip_address === null) delete speedtest.ip_address;
     return speedtest
 }
 
@@ -18,6 +31,7 @@ module.exports.listAll = async () => {
     for (let dbEntry of dbEntries) {
         if (dbEntry.error === null) delete dbEntry.error;
         if (dbEntry.resultId === null) delete dbEntry.resultId;
+        if (dbEntry.ip_address === null) delete dbEntry.ip_address;
     }
 
     return dbEntries;
@@ -39,6 +53,7 @@ module.exports.listTests = async (afterId, limit) => {
     for (let dbEntry of dbEntries) {
         if (dbEntry.error === null) delete dbEntry.error;
         if (dbEntry.resultId === null) delete dbEntry.resultId;
+        if (dbEntry.ip_address === null) delete dbEntry.ip_address;
     }
 
     return dbEntries;
@@ -55,6 +70,7 @@ module.exports.importTests = async (data) => {
     for (let entry of data) {
         if (entry.error === null) delete entry.error;
         if (entry.resultId === null) delete entry.resultId;
+        if (entry.ip_address === null) delete entry.ip_address;
 
         if (!["custom", "auto"].includes(entry.type)) continue;
         if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(entry.created)) continue;
@@ -117,5 +133,6 @@ module.exports.getLatest = async () => {
     if (latest === null) return undefined;
     if (latest.error === null) delete latest.error;
     if (latest.resultId === null) delete latest.resultId;
+    if (latest.ip_address === null) delete latest.ip_address;
     return latest;
 }
