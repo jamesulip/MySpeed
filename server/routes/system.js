@@ -5,6 +5,7 @@ const axios = require('axios');
 const password = require('../middlewares/password');
 const serverController = require('../controller/servers');
 const interfaces = require('../util/loadInterfaces');
+const { getPublicIpAddress } = require('../util/publicIp');
 
 app.get("/version", password(false), async (req, res) => {
     if (process.env.PREVIEW_MODE === "true") return res.json({local: version, remote: "0"});
@@ -25,6 +26,19 @@ app.get("/server/:provider", password(false), (req, res) => {
 
 app.get("/interfaces", password(false), async (req, res) => {
     res.json(interfaces.interfaces);
+});
+
+app.get("/public-ip", password(false), async (req, res) => {
+    try {
+        const publicIp = await getPublicIpAddress();
+        res.json({ ip: publicIp });
+    } catch (error) {
+        console.error('Failed to fetch public IP:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch public IP address',
+            message: error.message 
+        });
+    }
 });
 
 module.exports = app;

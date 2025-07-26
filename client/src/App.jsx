@@ -25,6 +25,7 @@ import {PushOverIcon} from "@/common/assets/icons/pushover";
 import Nodes from "@/pages/Nodes";
 import Statistics from "@/pages/Statistics";
 import Home from "@/pages/Home";
+import {setTitleToPublicIp} from "@/common/utils/PublicIpUtil";
 
 library.add(fas, fab);
 library.add(PushOverIcon);
@@ -55,6 +56,13 @@ const App = () => {
         i18n.on("initialized", () => setTranslationsLoaded(true));
         i18n.on("failedLoading", () => setTranslationError(true));
     }, []);
+
+    // Set document title to public IP address when the app loads
+    useEffect(() => {
+        if (translationsLoaded) {
+            setTitleToPublicIp("MySpeed - ");
+        }
+    }, [translationsLoaded]);
 
     const router = createBrowserRouter([
         {

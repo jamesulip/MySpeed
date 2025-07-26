@@ -8,7 +8,7 @@ const binaries = require('../../config/binaries');
 
 const binaryRegex = /speedtest(.exe)?$/;
 const binaryDirectory = __dirname + "/../../../bin/";
-const binaryPath = `${binaryDirectory}/ookla` + (process.platform === "win32" ? ".exe" : "");
+const binaryPath = `${binaryDirectory}/speedtest` + (process.platform === "win32" ? ".exe" : "");
 
 const downloadPath = `https://install.speedtest.net/app/cli/ookla-speedtest-${binaries.ooklaVersion}-`;
 
